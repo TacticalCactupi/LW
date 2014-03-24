@@ -75,7 +75,7 @@ public class Main extends JavaPlugin {
 							//-----> Main Logger <-----\\
 						    PreparedStatement log;
 							try {
-								log = MySQL.openConnection().prepareStatement("INSERT INTO LW (`ign`, `world`, `x`, `y`, `z`, `timestamp`) VALUES (?, ?, ?, ?, ?,);");
+								log = MySQL.openConnection().prepareStatement("INSERT INTO LW (`ign`, `world`, `x`, `y`, `z`) VALUES (?, ?, ?, ?, ?,);");
 								for (Player p : Bukkit.getOnlinePlayers())
 							    {
 							      Location loc = p.getLocation();
