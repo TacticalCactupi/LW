@@ -13,6 +13,7 @@ import javax.sql.StatementEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -43,6 +44,7 @@ public class Main extends JavaPlugin {
     //-----> Disable Setup <-----\\
 	@Override
 	public void onDisable() {
+		saveConfig();
 		Connection c = null;
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName()
@@ -109,6 +111,7 @@ public class Main extends JavaPlugin {
 	}
 	
 	//-----> Main Commands <-----\\
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd,
 			String commandLabel, String[] args) {
@@ -131,31 +134,36 @@ public class Main extends JavaPlugin {
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw help - Shows this page.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw timer - Shows time before next log.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw version - Check LW's installed version.");
-					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw check <player> <world> - Show a players locations.");
+					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw check <player> - Show a players locations.");
 				} else if (args[0] == "get"){
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Bukkit Dev Page:" + ChatColor.DARK_RED + "dev.bukkit.org/location-watchdog/");
 				} else if (args[0] == "version"){
 					PluginDescriptionFile pdfFile = this.getDescription();
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Installed Version: " + ChatColor.DARK_RED + pdfFile.getVersion() + " By Build_.");
 				} else if (args[0] == "check"){
-					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Incorrect syntax! " + ChatColor.DARK_RED + "/lw check <player> <world>");
+					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Incorrect syntax! " + ChatColor.DARK_RED + "/lw check <player>");
  					}
 				} else if (args.length == 2){
-					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.DARK_RED + "Incorrect syntax!" + ChatColor.YELLOW + " Try /lw help.");
-				} else if (args.length == 3){
 					if(args[0] == "check"){
 						if(run.hasPermission("lw.staff")){
 							String target = args[1];
-							
+							String world = run.getWorld().getName();
 							try {
 								grabber = MySQL.openConnection().createStatement();
-								ResultSet res = grabber.executeQuery("SELECT * FROM LW WHERE ign = '" + target + "';");
-								res.next();
+								ResultSet res = grabber.executeQuery("SELECT * FROM LW WHERE ign = '" + target + "' AND w = '" + world + "';");
 								if(res.getString("ign") == null){
 									run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.WHITE + target + ChatColor.DARK_RED + " doesn't have any logged locations!");
 								} else {
 									
-									// TODO Show player locations and make a way (command) to revert it.
+									while (res.next()) {
+									World w = run.getWorld();
+									int x = res.getInt("x");
+									int y = res.getInt("y");
+									int z = res.getInt("z");
+									run.sendBlockChange(new Location(w, x, y, z), 113, byte);
+									y++;
+									run.sendBlockChange(new Location(w, x, y, z), 89, byte);
+									}
 									
 								}
 							} catch (SQLException e) {
