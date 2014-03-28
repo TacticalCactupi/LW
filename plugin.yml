@@ -1,0 +1,8 @@
+name: LocationWatchdog
+main: me.Build_.Collective.Main
+version: 1.0
+description: >
+             Track player locations with LW!
+commands:
+  lw:
+    description: Minimalistic plugin description. Try /lw help.

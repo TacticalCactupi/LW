@@ -1,7 +1,10 @@
-Welcome to Location Watchdog!
-___________________________________________________________________
-MySQL Mainframe, by -_Husky_-, is publicly available on the forums.|
-___________________________________________________________________|
+___________________________________________
+Welcome to Location Watchdog's GitHub Page!|
+___________________________________________|
 
-For compiled downloads, please use dev.bukkit.org/bukkit-plugins/location-watchdog/.
-Feel free to fork, watch, comment, or commit to this repository! Thanks!
+Feel free to commit, fork, etc. here. For info
+on the plugin, look at the Bukkit page.
+
+Thanks to all the help from #bukkitdev irc. Also,
+thanks to the MySQL connection by -_Husky_-, which
+is publicly available on forums.bukkit.org.

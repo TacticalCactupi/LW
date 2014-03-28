@@ -1,0 +1,50 @@
+## ----------------- Location Watchdog Configuration ----------------- ##
+## Do NOT use quotes or special characters unless otherwise specified! ##
+## Some sectors have defaults, feel free to leave them as is. However, ##
+## Be careful when modifying this configuration, and be sure to follow ##
+## All procedures. Lines beginning with "##" are ignored by the plugin ##
+## And are just comments. Don't add any non-commented lines! Or else.. ##
+## ------------------------------------------------------------------- ##
+
+
+## This determines how long LW will log player locations. It's advised ##
+## that large communities have this number a bit higher to reduce lag. ##
+## Small servers can have it lower, as it won't have to log as much as ##
+## larger servers. This is measured in seconds. Just put the desired   ##
+## amount, without any labels. Suggested time: 15-25 seconds.          ##
+interval:
+
+
+## This will determine whether or not the console gets a message each  ##
+## time it logs. It'll include how many players were logged. If you've ##
+## set your interval to a low number, you'll get lots of console spam. ##
+## By default, this is marked as false. Just write true or false.      ##
+timer-notifications:
+
+
+## Now we must configure the database. This plugin uses MySQL, a SQL   ##
+## manager (that's free) to manage a database, a way of accessing and  ##
+## large quantities of data. In this case, LW stores the name of the   ##
+## world the player is in, and their current location. You DO NEED a   ##
+## MySQL Database for LW to work. Optionally, you can create the table ##
+## `LW`, if you know what you're doing, but LW makes it automatically. ##
+## Fallback strings are listed above each MySQL credential field.      ##
+
+## (IP That the database is on) Default: localhost
+hostname:
+
+## (Port of the IP that the database is on.) Default: 3306
+port:
+
+## (Name of the database.) Default: minecraft
+database:
+
+## (Username used to sign in to the database.) Default: root
+user:
+
+## (Password used to sign in to the database.) Default: password
+password:
+
+## You're done now! If you need help, comment on the plugin's page at  ##
+## dev.bukkit.org/bukkit-plugins/location-watchdog or on the plugin's  ##
+## GitHub page as mentioned on the Bukkit Dev page. Thanks!            ##

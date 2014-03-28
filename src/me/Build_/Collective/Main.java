@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.logging.Logger;
 
 import javax.sql.StatementEvent;
@@ -13,7 +15,9 @@ import javax.sql.StatementEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,6 +33,7 @@ public class Main extends JavaPlugin {
 	Statement tableSetup;
 	Statement grabber;
 	int logCount = Bukkit.getServer().getOnlinePlayers().length;
+	public final HashMap<Player, ArrayList<Block>> hashmap = new HashMap<Player, ArrayList<Block>>();
 	//-----> Configuration Variables <-----\\
 	public int number = getConfig().getInt("interval");
 	public boolean console = getConfig().getBoolean("timer-notifications");
@@ -50,6 +55,7 @@ public class Main extends JavaPlugin {
 		this.logger.info(pdfFile.getName()
 				+ " was successfully disabled. Goodbye!");
 		number = 0;
+		hashmap.clear();
 	}
 
 	//-----> Enable Setup <-----\\
@@ -64,7 +70,7 @@ public class Main extends JavaPlugin {
 		c = MySQL.openConnection();
 		try {
 	    	tableSetup = MySQL.openConnection().createStatement();
-			tableSetup.executeQuery("CREATE TABLE IF NOT EXISTS `LW`");
+			tableSetup.executeQuery("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `w` TEXT NOT NULL, `x` TEXT NOT NULL, `y` TEXT NOT NULL, `z` TEXT NOT NULL)");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -116,6 +122,7 @@ public class Main extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd,
 			String commandLabel, String[] args) {
 		Player run = (Player) sender;
+		World w = run.getWorld();
 		if(commandLabel.equalsIgnoreCase("lw")){
 			if(args.length == 0){
 			run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "-----" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Location Watchdog " + "[" + ChatColor.GREEN + "-----" + ChatColor.GOLD + "]");
@@ -135,6 +142,7 @@ public class Main extends JavaPlugin {
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw timer - Shows time before next log.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw version - Check LW's installed version.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw check <player> - Show a players locations.");
+					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED + " /lw done <player> - Finish viewing player locations.");
 				} else if (args[0] == "get"){
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Bukkit Dev Page:" + ChatColor.DARK_RED + "dev.bukkit.org/location-watchdog/");
 				} else if (args[0] == "version"){
@@ -156,30 +164,56 @@ public class Main extends JavaPlugin {
 								} else {
 									
 									while (res.next()) {
-									World w = run.getWorld();
 									int x = res.getInt("x");
 									int y = res.getInt("y");
 									int z = res.getInt("z");
-									run.sendBlockChange(new Location(w, x, y, z), 113, byte);
+									run.sendBlockChange(new Location(w, x, y, z), 113, (byte) 0);
 									y++;
-									run.sendBlockChange(new Location(w, x, y, z), 89, byte);
-									}
-									
+									run.sendBlockChange(new Location(w, x, y, z), 89, (byte) 0);
+									res.next();
+								    }
+									hashmap.put(run, null);
 								}
 							} catch (SQLException e) {
 								e.printStackTrace();
 							}
-							
 						} else {
 							run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.DARK_RED + " You don't have permission!");
 						}
-					} else {
+					} else if (args[0] == "done"){
+ 						if(hashmap.containsKey(run)){
+ 							String target = args[1];
+							String world = run.getWorld().getName();
+ 							try {
+								ResultSet un = grabber.executeQuery("SELECT * FROM LW WHERE ign = '" + target + "' AND w = '" + world + "';");
+	 							while (un.next()) {
+									int x = un.getInt("x");
+									int y = un.getInt("y");
+									int z = un.getInt("z");
+									Block b = w.getBlockAt(x, y, z);
+									run.sendBlockChange(new Location(w, x, y, z), b.getTypeId(), (byte) b.getData());
+									y++;
+									run.sendBlockChange(new Location(w, x, y, z), b.getTypeId(), (byte) b.getData());
+									un.next();
+								    }
+							} catch (SQLException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+ 							hashmap.remove(run);
+ 						} else {
+ 							run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.DARK_RED + " You weren't viewing player locations!");
+ 						} 
+ 					} else {
 							run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.DARK_RED + "Incorrect syntax!" + ChatColor.YELLOW + " Try /lw help.");
 					}
-				} else {
+				}  else {
 							run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW + " Error: " + ChatColor.DARK_RED + "Incorrect syntax!" + ChatColor.YELLOW + " Try /lw help.");
 				}
 			}
 		return false;
 	}
+
+
+
 }
