@@ -35,8 +35,8 @@ public class Main extends JavaPlugin {
 	int logCount = Bukkit.getServer().getOnlinePlayers().length;
 	public final HashMap<Player, ArrayList<Block>> hashmap = new HashMap<Player, ArrayList<Block>>();
 	//-----> Configuration Variables <-----\\
-	public int number = getConfig().getInt("interval");
-	public boolean console = getConfig().getBoolean("timer-notifications");
+	public int number = getConfig().getInt("interval", 15);
+	public boolean console = getConfig().getBoolean("timer-notifications", false);
 	//-----> Grab MySQL Credentials <-----\\
 	public String dbHost = getConfig().getString("hostname", "localhost");
 	public String dbPort = getConfig().getString("port", "3306");
@@ -64,7 +64,7 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		number = getConfig().getInt("interval");
 		//-----> Config. Generator <-----\\
-		getConfig().options().copyDefaults(true);
+		this.saveDefaultConfig();
 		saveConfig();
 		//-----> Setup Tables <-----\\
 		c = MySQL.openConnection();
