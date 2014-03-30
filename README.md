@@ -1,6 +1,6 @@
 ___________________________________________
-Welcome to Location Watchdog's GitHub Page!
-___________________________________________
+Welcome to Location Watchdog's GitHub Page!|
+___________________________________________|
 
 Feel free to commit, fork, etc. here. For info
 on the plugin, look at the Bukkit page.

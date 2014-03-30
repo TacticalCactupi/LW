@@ -4,6 +4,8 @@
 ## Be careful when modifying this configuration, and be sure to follow ##
 ## All procedures. Lines beginning with "##" are ignored by the plugin ##
 ## And are just comments. Don't add any non-commented lines! Or else.. ##
+## Please not that leaving a field blank will crash this plugin, most  ##
+## likely. Need configuration help? dev.bukkit.org/location-watchdog/  ##
 ## ------------------------------------------------------------------- ##
 
 
@@ -12,14 +14,14 @@
 ## Small servers can have it lower, as it won't have to log as much as ##
 ## larger servers. This is measured in seconds. Just put the desired   ##
 ## amount, without any labels. Suggested time: 15-25 seconds.          ##
-interval:
+interval: 15
 
 
 ## This will determine whether or not the console gets a message each  ##
 ## time it logs. It'll include how many players were logged. If you've ##
 ## set your interval to a low number, you'll get lots of console spam. ##
 ## By default, this is marked as false. Just write true or false.      ##
-timer-notifications:
+timer-notifications: false
 
 
 ## Now we must configure the database. This plugin uses MySQL, a SQL   ##
@@ -31,19 +33,19 @@ timer-notifications:
 ## Fallback strings are listed above each MySQL credential field.      ##
 
 ## (IP That the database is on) Default: localhost
-hostname:
+hostname: localhost
 
 ## (Port of the IP that the database is on.) Default: 3306
-port:
+port: 3306
 
 ## (Name of the database.) Default: minecraft
-database:
+database: minecraft
 
 ## (Username used to sign in to the database.) Default: root
-user:
+user: root
 
 ## (Password used to sign in to the database.) Default: password
-password:
+password: password
 
 ## You're done now! If you need help, comment on the plugin's page at  ##
 ## dev.bukkit.org/bukkit-plugins/location-watchdog or on the plugin's  ##
