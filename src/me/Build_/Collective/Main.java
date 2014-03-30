@@ -204,6 +204,7 @@ public class Main extends JavaPlugin {
 											+ "' AND w = '"
 											+ world
 											+ "';");
+							if(res.next()){
 							if (res.getString("ign") == null) {
 								run.sendMessage(ChatColor.GOLD + "["
 										+ ChatColor.GREEN + "LW"
@@ -226,6 +227,7 @@ public class Main extends JavaPlugin {
 											new Location(w, x, y, z), 89,
 											(byte) 0);
 									res.next();
+								}
 								}
 								hashmap.put(run, null);
 							}
