@@ -63,7 +63,7 @@ public class Main extends JavaPlugin {
 		try {
 			tableSetup = MySQL.openConnection().createStatement();
 			tableSetup
-					.execute("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `w` TEXT NOT NULL, `x` TEXT NOT NULL, `y` TEXT NOT NULL, `z` TEXT NOT NULL)");
+					.execute("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `ign` TEXT NOT NULL, `w` TEXT NOT NULL, `x` TEXT NOT NULL, `y` TEXT NOT NULL, `z` TEXT NOT NULL)");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -156,9 +156,6 @@ public class Main extends JavaPlugin {
 							+ " /lw help - Shows this page.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED
-							+ " /lw timer - Shows time before next log.");
-					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
-							+ "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED
 							+ " /lw version - Check LW's installed version.");
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.DARK_RED
@@ -174,19 +171,25 @@ public class Main extends JavaPlugin {
 				} else if (args[0].equals("get")) {
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
-							+ " Bukkit Dev Page:" + ChatColor.DARK_RED
+							+ " Bukkit Dev Page: " + ChatColor.DARK_RED
 							+ "dev.bukkit.org/location-watchdog/");
 				} else if (args[0].equals("version")) {
 					PluginDescriptionFile pdfFile = this.getDescription();
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
 							+ " Installed Version: " + ChatColor.DARK_RED
-							+ pdfFile.getVersion() + " By Build_.");
+							+ pdfFile.getVersion() + " by Build_.");
 				} else if (args[0].equals("check")) {
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
 							+ " Incorrect syntax! " + ChatColor.DARK_RED
 							+ "/lw check <player>");
+				} else {
+					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
+							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
+							+ " Error: " + ChatColor.DARK_RED
+							+ "Unknown command!" + ChatColor.YELLOW
+							+ " Try /lw help.");
 				}
 			} else if (args.length == 2) {
 				if (args[0].equals("check")) {
@@ -194,8 +197,7 @@ public class Main extends JavaPlugin {
 						String target = args[1];
 						String world = run.getWorld().getName();
 						try {
-							grabber = ((MySQL) c).openConnection()
-									.createStatement();
+							grabber = c.createStatement();
 							ResultSet res = grabber
 									.executeQuery("SELECT * FROM LW WHERE ign = '"
 											+ target
