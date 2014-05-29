@@ -7,8 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -18,9 +16,12 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+
+
 
 //-----> Concluded Imports <-----\\
 public class Main extends JavaPlugin {
@@ -30,7 +31,6 @@ public class Main extends JavaPlugin {
 	Statement tableSetup;
 	Statement grabber;
 	int logCount = Bukkit.getServer().getOnlinePlayers().length;
-	public final HashMap<Player, ArrayList<Block>> hashmap = new HashMap<Player, ArrayList<Block>>();
 	// -----> Connection variable <-----\\
 	Connection c;
 
@@ -42,13 +42,22 @@ public class Main extends JavaPlugin {
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName()
 				+ " was successfully disabled. Goodbye!");
-		hashmap.clear();
 	}
 
 	// -----> Enable Setup <-----\\
 	@Override
 	public void onEnable() {
-		// -----> Config. Generator <-----\\
+		// -----> Config.<-----\\
+		FileConfiguration config = getConfig();
+		
+		config.addDefault("Config.Logging.Interval", 15);
+		config.addDefault("Config.Database.hostname", "localhost");
+		config.addDefault("Config.Database.port", "3306");
+		config.addDefault("Config.Database.database", "minecraft");
+		config.addDefault("Config.Database.user", "root");
+		config.addDefault("Config.Database.password", "password");
+		
+		config.options().copyDefaults(true);
 		saveConfig();
 		// -----> Grab MySQL Credentials <-----\\
 		final String dbHost = getConfig().getString("hostname", "localhost");
@@ -56,67 +65,65 @@ public class Main extends JavaPlugin {
 		final String dbName = getConfig().getString("database", "minecraft");
 		final String dbUser = getConfig().getString("user", "root");
 		final String dbPass = getConfig().getString("password", "password");
-		final MySQL MySQL = new MySQL(plugin, dbHost, dbPort, dbName, dbUser,
+		final MySQL MySQL = new MySQL(this, dbHost, dbPort, dbName, dbUser,
 				dbPass);
-		// -----> Setup Tables <-----\\
+		//-----> Setup Tables <-----\\
 		c = MySQL.openConnection();
 		try {
 			tableSetup = MySQL.openConnection().createStatement();
 			tableSetup
-					.execute("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `ign` TEXT NOT NULL, `w` TEXT NOT NULL, `x` TEXT NOT NULL, `y` TEXT NOT NULL, `z` TEXT NOT NULL)");
+					.execute("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `ign` TEXT NOT NULL, `w` TEXT NOT NULL, `x` DOUBLE NOT NULL, `y` DOUBLE NOT NULL, `z` DOUBLE NOT NULL)");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
-		// -----> Main Timer <-----\\
-		this.getServer().getScheduler()
-				.scheduleAsyncRepeatingTask(this, new Runnable() {
-					public void run() {
-						int number = getConfig().getInt("interval", 15);
-						if (number != 0) {
-							number--;
-						} else {
-							// -----> Main Logger <-----\\
-							PreparedStatement log;
-							try {
-								log = MySQL
-										.openConnection()
-										.prepareStatement(
-												"INSERT INTO LW (`ign`, `w`, `x`, `y`, `z`) VALUES (?, ?, ?, ?, ?,);");
-								for (Player p : Bukkit.getOnlinePlayers()) {
-									Location loc = p.getLocation();
-									log.setString(1, p.getName());
-									log.setString(2, loc.getWorld().getName());
-									log.setNString(3,
-											String.valueOf(loc.getX()));
-									log.setNString(4,
-											String.valueOf(loc.getY()));
-									log.setNString(5,
-											String.valueOf(loc.getZ()));
-									log.execute();
-								}
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
-
-							// -----> Notifications <-----\\
-							boolean console = getConfig().getBoolean(
-									"timer-notifications", false);
-							if (console = true) {
-								logger.info("Location Watchdog has just logged "
-										+ logCount + " player locations.");
-							}
-							number = getConfig().getInt("interval");
-						}
-					}
-				}, 0L, 20L);
-
 		// -----> Main Enabler <-----\\
 		PluginDescriptionFile pdfFile = this.getDescription();
 		this.logger.info(pdfFile.getName() + " Version " + pdfFile.getVersion()
 				+ " was successfully enabled!");
-	}
+		
+		this.getServer().getScheduler()
+		.scheduleAsyncRepeatingTask(this, new Runnable() {
+			public void run() {
+				int number = getConfig().getInt("interval", 15);
+				if (number != 0) {
+					number--;
+				} else {
+					// -----> Main Logger <-----\\
+					PreparedStatement log;
+					try {
+						log = MySQL
+								.openConnection()
+								.prepareStatement(
+										"INSERT INTO LW (`ign`, `w`, `x`, `y`, `z`) VALUES (?, ?, ?, ?, ?,);");
+						for (Player p : Bukkit.getOnlinePlayers()) {
+							Location loc = p.getLocation();
+							log.setString(1, p.getName());
+							log.setString(2, loc.getWorld().getName());
+							log.setNString(3,
+									String.valueOf(loc.getX()));
+							log.setNString(4,
+									String.valueOf(loc.getY()));
+							log.setNString(5,
+									String.valueOf(loc.getZ()));
+							log.execute();
+						}
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
 
+					// -----> Notifications <-----\\
+					boolean console = getConfig().getBoolean(
+							"timer-notifications", false);
+					if (console = true) {
+						logger.info("Location Watchdog has just logged "
+								+ logCount + " player locations.");
+					}
+					number = getConfig().getInt("interval");
+				}
+			}
+		}, 0L, 20L);
+	}
+	
 	// -----> Main Commands <-----\\
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd,
@@ -126,9 +133,9 @@ public class Main extends JavaPlugin {
 		if (commandLabel.equalsIgnoreCase("lw")) {
 			if (args.length == 0) {
 				run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
-						+ "-----" + ChatColor.GOLD + "]" + ChatColor.YELLOW
+						+ "-------" + ChatColor.GOLD + "]" + ChatColor.YELLOW
 						+ " Location Watchdog " + "[" + ChatColor.GREEN
-						+ "-----" + ChatColor.GOLD + "]");
+						+ "-------" + ChatColor.GOLD + "]");
 				run.sendMessage(ChatColor.YELLOW
 						+ " Location Watchdog is a plugin by Build_ that ");
 				run.sendMessage(ChatColor.YELLOW
@@ -138,7 +145,7 @@ public class Main extends JavaPlugin {
 				run.sendMessage(ChatColor.YELLOW
 						+ " Help: /lw help - Thanks for using LW! ");
 				run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
-						+ "-----------------------------" + ChatColor.GOLD
+						+ "--------------------------------" + ChatColor.GOLD
 						+ "]");
 			} else if (args.length == 1) {
 				if (args[0].equals("help")) {
@@ -204,32 +211,41 @@ public class Main extends JavaPlugin {
 											+ "' AND w = '"
 											+ world
 											+ "';");
-							if(res.next()){
-							if (res.getString("ign") == null) {
+							if (res.first()) {
+								while (res.next()) {
+									int x = res.getInt("x");
+									int y = res.getInt("y");
+									int z = res.getInt("z");
+									run.sendMessage("X: " + x + ", Y: " + y
+											+ ", Z: " + z);
+									run.sendBlockChange(
+											new Location(w, x, y, z), 113,
+											(byte) 0);
+									run.sendBlockChange(new Location(w, x,
+											y + 1, z), 89, (byte) 0);
+								}
+								
+								run.sendMessage(ChatColor.GOLD + "["
+										+ ChatColor.GREEN + "LW"
+										+ ChatColor.GOLD + "]"
+										+ ChatColor.YELLOW
+										+ " Now viewing logged locations for: "
+										+ ChatColor.WHITE + target
+										+ ChatColor.YELLOW + " in the world: "
+										+ ChatColor.WHITE
+										+ run.getWorld().getName()
+										+ ChatColor.YELLOW + ".");
+								
+							} else {
+								
 								run.sendMessage(ChatColor.GOLD + "["
 										+ ChatColor.GREEN + "LW"
 										+ ChatColor.GOLD + "]"
 										+ ChatColor.YELLOW + " Error: "
 										+ ChatColor.WHITE + target
 										+ ChatColor.DARK_RED
-										+ " doesn't have any logged locations!");
-							} else {
+										+ " doesn't have any logged locations in this world!");
 
-								while (res.next()) {
-									int x = res.getInt("x");
-									int y = res.getInt("y");
-									int z = res.getInt("z");
-									run.sendBlockChange(
-											new Location(w, x, y, z), 113,
-											(byte) 0);
-									y++;
-									run.sendBlockChange(
-											new Location(w, x, y, z), 89,
-											(byte) 0);
-									res.next();
-								}
-								}
-								hashmap.put(run, null);
 							}
 						} catch (SQLException e) {
 							e.printStackTrace();
@@ -237,12 +253,11 @@ public class Main extends JavaPlugin {
 					} else {
 						run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 								+ "LW" + ChatColor.GOLD + "]"
-								+ ChatColor.YELLOW + " Error: "
+								+ ChatColor.YELLOW + " Error:"
 								+ ChatColor.DARK_RED
 								+ " You don't have permission!");
 					}
 				} else if (args[0].equals("done")) {
-					if (hashmap.containsKey(run)) {
 						String target = args[1];
 						String world = run.getWorld().getName();
 						try {
@@ -252,30 +267,48 @@ public class Main extends JavaPlugin {
 											+ "' AND w = '"
 											+ world
 											+ "';");
-							while (un.next()) {
-								int x = un.getInt("x");
-								int y = un.getInt("y");
-								int z = un.getInt("z");
-								Block b = w.getBlockAt(x, y, z);
-								run.sendBlockChange(new Location(w, x, y, z),
-										b.getTypeId(), (byte) b.getData());
-								y++;
-								run.sendBlockChange(new Location(w, x, y, z),
-										b.getTypeId(), (byte) b.getData());
-								un.next();
+							if (un.first()) {
+								while (un.next()) {
+									int x = un.getInt("x");
+									int y = un.getInt("y");
+									int z = un.getInt("z");
+									Block b = w.getBlockAt(x, y, z);
+									run.sendMessage("X: " + x + ", Y: " + y
+											+ ", Z: " + z);
+									run.sendBlockChange(
+											new Location(w, x, y, z),
+											b.getTypeId(), (byte) b.getData());
+									run.sendBlockChange(new Location(w, x,
+											y + 1, z), b.getTypeId(), (byte) b
+											.getData());
+								}
+								
+								run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
+										+ "LW" + ChatColor.GOLD + "]"
+										+ ChatColor.YELLOW
+										+ " No longer viewing logged locations for: "
+										+ ChatColor.WHITE + target + ChatColor.YELLOW
+										+ " in the world: " + ChatColor.WHITE
+										+ run.getWorld().getName() + ChatColor.YELLOW
+										+ ".");
+								
+							} else {
+								run.sendMessage(ChatColor.GOLD
+										+ "["
+										+ ChatColor.GREEN
+										+ "LW"
+										+ ChatColor.GOLD
+										+ "]"
+										+ ChatColor.YELLOW
+										+ " Error: "
+										+ ChatColor.DARK_RED
+										+ " That player doesn't have any logged locations in this world!");
 							}
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}
-						hashmap.remove(run);
-					} else {
-						run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
-								+ "LW" + ChatColor.GOLD + "]"
-								+ ChatColor.YELLOW + " Error: "
-								+ ChatColor.DARK_RED
-								+ " You weren't viewing player locations!");
-					}
-				} else {
+
+
 					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
 							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
 							+ " Error: " + ChatColor.DARK_RED
