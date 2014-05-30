@@ -60,11 +60,11 @@ public class Main extends JavaPlugin {
 		config.options().copyDefaults(true);
 		saveConfig();
 		// -----> Grab MySQL Credentials <-----\\
-		final String dbHost = getConfig().getString("hostname", "localhost");
-		final String dbPort = getConfig().getString("port", "3306");
-		final String dbName = getConfig().getString("database", "minecraft");
-		final String dbUser = getConfig().getString("user", "root");
-		final String dbPass = getConfig().getString("password", "password");
+		final String dbHost = getConfig().getString("Config.Database.hostname", "localhost");
+		final String dbPort = getConfig().getString("Config.Database.port", "3306");
+		final String dbName = getConfig().getString("Config.Database.database", "minecraft");
+		final String dbUser = getConfig().getString("Config.Database.user", "root");
+		final String dbPass = getConfig().getString("Config.Database.password", "password");
 		final MySQL MySQL = new MySQL(this, dbHost, dbPort, dbName, dbUser,
 				dbPass);
 		//-----> Setup Tables <-----\\
@@ -91,10 +91,13 @@ public class Main extends JavaPlugin {
 					// -----> Main Logger <-----\\
 					PreparedStatement log;
 					try {
+						
 						log = MySQL
 								.openConnection()
 								.prepareStatement(
 										"INSERT INTO LW (`ign`, `w`, `x`, `y`, `z`) VALUES (?, ?, ?, ?, ?,);");
+						
+						
 						for (Player p : Bukkit.getOnlinePlayers()) {
 							Location loc = p.getLocation();
 							log.setString(1, p.getName());
@@ -107,17 +110,11 @@ public class Main extends JavaPlugin {
 									String.valueOf(loc.getZ()));
 							log.execute();
 						}
+						
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
 
-					// -----> Notifications <-----\\
-					boolean console = getConfig().getBoolean(
-							"timer-notifications", false);
-					if (console = true) {
-						logger.info("Location Watchdog has just logged "
-								+ logCount + " player locations.");
-					}
 					number = getConfig().getInt("interval");
 				}
 			}
@@ -308,12 +305,6 @@ public class Main extends JavaPlugin {
 							e.printStackTrace();
 						}
 
-
-					run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
-							+ "LW" + ChatColor.GOLD + "]" + ChatColor.YELLOW
-							+ " Error: " + ChatColor.DARK_RED
-							+ "Incorrect syntax!" + ChatColor.YELLOW
-							+ " Try /lw help.");
 				}
 			} else {
 				run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN + "LW"
