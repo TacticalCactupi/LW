@@ -70,9 +70,11 @@ public class Main extends JavaPlugin {
 		//-----> Setup Tables <-----\\
 		c = MySQL.openConnection();
 		try {
+			getLogger().info("First try statement init.");
 			tableSetup = MySQL.openConnection().createStatement();
 			tableSetup
 					.execute("CREATE TABLE IF NOT EXISTS `LW` (`ID` INTEGER PRIMARY KEY NOT NULL, `ign` TEXT NOT NULL, `w` TEXT NOT NULL, `x` DOUBLE NOT NULL, `y` DOUBLE NOT NULL, `z` DOUBLE NOT NULL)");
+			getLogger().info("First try statement complete.");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -87,16 +89,17 @@ public class Main extends JavaPlugin {
 				int number = getConfig().getInt("interval", 15);
 				if (number != 0) {
 					number--;
+					getLogger().info("1 was subtracted from number.");
 				} else {
 					// -----> Main Logger <-----\\
 					PreparedStatement log;
 					try {
-						
+						getLogger().info("2nd try started.");
 						log = MySQL
 								.openConnection()
 								.prepareStatement(
 										"INSERT INTO LW (`ign`, `w`, `x`, `y`, `z`) VALUES (?, ?, ?, ?, ?,);");
-						
+						getLogger().info("2nd try finished.");
 						
 						for (Player p : Bukkit.getOnlinePlayers()) {
 							Location loc = p.getLocation();
@@ -109,6 +112,7 @@ public class Main extends JavaPlugin {
 							log.setNString(5,
 									String.valueOf(loc.getZ()));
 							log.execute();
+							getLogger().info("Data logged for " + p.getName());
 						}
 						
 					} catch (SQLException e) {
@@ -209,7 +213,9 @@ public class Main extends JavaPlugin {
 											+ world
 											+ "';");
 							if (res.first()) {
+								getLogger().info("Res.first for /lw check positive.");
 								while (res.next()) {
+									getLogger().info("While start.");
 									int x = res.getInt("x");
 									int y = res.getInt("y");
 									int z = res.getInt("z");
@@ -220,7 +226,10 @@ public class Main extends JavaPlugin {
 											(byte) 0);
 									run.sendBlockChange(new Location(w, x,
 											y + 1, z), 89, (byte) 0);
+									getLogger().info("While end.");
 								}
+								
+								getLogger().info("While complete.");
 								
 								run.sendMessage(ChatColor.GOLD + "["
 										+ ChatColor.GREEN + "LW"
@@ -242,6 +251,7 @@ public class Main extends JavaPlugin {
 										+ ChatColor.WHITE + target
 										+ ChatColor.DARK_RED
 										+ " doesn't have any logged locations in this world!");
+								getLogger().info("None found, ln. 254");
 
 							}
 						} catch (SQLException e) {
@@ -266,6 +276,7 @@ public class Main extends JavaPlugin {
 											+ "';");
 							if (un.first()) {
 								while (un.next()) {
+									getLogger().info("While start.");
 									int x = un.getInt("x");
 									int y = un.getInt("y");
 									int z = un.getInt("z");
@@ -278,6 +289,7 @@ public class Main extends JavaPlugin {
 									run.sendBlockChange(new Location(w, x,
 											y + 1, z), b.getTypeId(), (byte) b
 											.getData());
+									getLogger().info("While end.");
 								}
 								
 								run.sendMessage(ChatColor.GOLD + "[" + ChatColor.GREEN
@@ -300,7 +312,9 @@ public class Main extends JavaPlugin {
 										+ " Error: "
 										+ ChatColor.DARK_RED
 										+ " That player doesn't have any logged locations in this world!");
+								getLogger().info("None, ln. 315");	
 							}
+							
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}
