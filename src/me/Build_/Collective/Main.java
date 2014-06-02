@@ -20,6 +20,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitScheduler;
 
 
 
@@ -50,7 +51,7 @@ public class Main extends JavaPlugin {
 		// -----> Config.<-----\\
 		FileConfiguration config = getConfig();
 		
-		config.addDefault("Config.Logging.Interval", 15);
+		config.addDefault("Config.Logging.Interval", 15L);
 		config.addDefault("Config.Database.hostname", "localhost");
 		config.addDefault("Config.Database.port", "3306");
 		config.addDefault("Config.Database.database", "minecraft");
@@ -83,14 +84,10 @@ public class Main extends JavaPlugin {
 		this.logger.info(pdfFile.getName() + " Version " + pdfFile.getVersion()
 				+ " was successfully enabled!");
 		
-		this.getServer().getScheduler()
-		.scheduleAsyncRepeatingTask(this, new Runnable() {
-			public void run() {
-				int number = getConfig().getInt("interval", 15);
-				if (number != 0) {
-					number--;
-					getLogger().info("1 was subtracted from number.");
-				} else {
+	    BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+	    scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+	        @Override
+	        public void run() {
 					// -----> Main Logger <-----\\
 					PreparedStatement log;
 					try {
@@ -111,6 +108,7 @@ public class Main extends JavaPlugin {
 									String.valueOf(loc.getY()));
 							log.setNString(5,
 									String.valueOf(loc.getZ()));
+							getLogger().info("Beginning log for" + p.getName());
 							log.execute();
 							getLogger().info("Data logged for " + p.getName());
 						}
@@ -118,11 +116,8 @@ public class Main extends JavaPlugin {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
-
-					number = getConfig().getInt("interval");
-				}
-			}
-		}, 0L, 20L);
+	        }
+	    }, 0L, 20L * getConfig().getLong("interval",15L));
 	}
 	
 	// -----> Main Commands <-----\\
